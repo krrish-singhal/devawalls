@@ -14,7 +14,7 @@ export function WallpaperCard({ imageUrl, onPress, size = 'grid' }: WallpaperCar
     ? screenWidth * 0.42
     : (screenWidth - 40) / 2;   // 16px padding each side + 8px gap
 
-  const cardHeight = cardWidth * (16 / 9);  // ALWAYS enforce 9:16 ratio
+  const cardHeight = cardWidth / (9 / 16);  // ALWAYS enforce 9:16 ratio
 
   return (
     <TouchableOpacity

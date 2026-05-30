@@ -13,7 +13,7 @@ import { CustomizeOverlay } from '@/components/CustomizeOverlay';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:4000';
 const screenWidth = Dimensions.get('window').width;
 const WALLPAPER_WIDTH = screenWidth;
-const WALLPAPER_HEIGHT = screenWidth * (16 / 9);
+const WALLPAPER_HEIGHT = screenWidth / (9 / 16);  // 9:16 portrait ratio
 
 export default function WallpaperScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

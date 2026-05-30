@@ -1,10 +1,8 @@
 import "../global.css";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
-import { useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
-import { router } from 'expo-router';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,23 +14,21 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const isProfileComplete = useUserStore((state) => state.isProfileComplete);
-
-  useEffect(() => {
-    // Check authentication on mount
-    if (!isAuthenticated) {
-      router.replace('/(auth)/login');
-    } else if (!isProfileComplete) {
-      router.replace('/splash');
-    } else {
-      router.replace('/(tabs)/');
-    }
-  }, [isAuthenticated, isProfileComplete]);
+  const { isAuthenticated } = useAuthStore();
+  const { isProfileComplete } = useUserStore();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack
+        screenOptions={{ headerShown: false }}
+        initialRouteName={
+          isAuthenticated
+            ? isProfileComplete
+              ? '(tabs)'
+              : 'splash'
+            : '(auth)/login'
+        }
+      />
     </QueryClientProvider>
   );
 }

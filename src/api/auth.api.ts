@@ -8,7 +8,7 @@ export const authApi = {
   },
 
   async updateProfile(name: string, profilePhotoBase64?: string): Promise<AuthResponse> {
-    const response = await apiClient.patch('/user/profile', { name, profilePhotoBase64 });
+    const response = await apiClient.patch('/auth/profile', { name, profilePhotoBase64 });
     return response.data;
   },
 };

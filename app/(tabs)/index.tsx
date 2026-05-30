@@ -18,9 +18,9 @@ export default function HomeScreen() {
   const { data: latestWallpapers, isLoading: latestLoading } = useLatestWallpapers();
 
   const cardWidth = screenWidth * 0.42;
-  const cardHeight = cardWidth * (16 / 9);
+  const cardHeight = cardWidth / (9 / 16);  // 9:16 portrait ratio
   const gridCardWidth = (screenWidth - 40) / 2;
-  const gridCardHeight = gridCardWidth * (16 / 9);
+  const gridCardHeight = gridCardWidth / (9 / 16);  // 9:16 portrait ratio
 
   return (
     <SafeAreaView className="flex-1 bg-dark">

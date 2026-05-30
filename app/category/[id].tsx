@@ -7,7 +7,7 @@ import { CATEGORIES } from '@/constants/categories';
 
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = (screenWidth - 40) / 2;
-const cardHeight = cardWidth * (16 / 9);
+const cardHeight = cardWidth / (9 / 16);  // 9:16 portrait ratio
 
 export default function CategoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
