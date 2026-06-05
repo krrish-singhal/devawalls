@@ -13,6 +13,8 @@ import wallpapersRoutes from './routes/wallpapers.js';
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1); // Trust Render/Cloudflare proxies to get the real client IP
+
 const PORT = process.env.PORT || 4000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -24,12 +26,14 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Rate limiting
-const limiter = rateLimit({
+// Rate limiting (restricted to API calls, excluded from static assets)
+const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 2000, // 2000 requests per 15 minutes per IP
+  standardHeaders: true,
+  legacyHeaders: false,
 });
-app.use(limiter);
+app.use('/api', apiLimiter);
 
 // Static file serving for wallpapers
 app.use('/wallpapers', express.static(path.join(__dirname, '../../public/wallpapers')));
