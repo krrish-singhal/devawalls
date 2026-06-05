@@ -28,6 +28,7 @@ export const WallpaperCard = React.memo(function WallpaperCard({ imageUrl, onPre
         source={{ uri: imageUrl }}
         style={{ width: '100%', height: '100%' }}
         contentFit="cover"
+        recyclingKey={imageUrl}
         placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
         transition={200}
         cachePolicy="memory-disk"
