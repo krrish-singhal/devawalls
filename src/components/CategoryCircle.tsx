@@ -44,6 +44,7 @@ export function CategoryCircle({ category, customThumbnailUrl }: CategoryCircleP
           source={{ uri: thumbnailUrl }}
           style={{ width: '100%', height: '100%', borderRadius: 42 }}
           contentFit="cover"
+          contentPosition="top"
           cachePolicy="memory-disk"
           placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
           transition={250}
