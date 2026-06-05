@@ -58,7 +58,12 @@ export default function LoginScreen() {
         err.message?.includes('10') || 
         err.message?.includes('DEVELOPER_ERROR')
       ) {
-        setError('Developer Error (10): Please register the EAS Android Keystore SHA-1 (A2:B3:CD:18:48:AD:B6:FE:AE:E0:D0:2A:0D:31:B9:B9:BD:FB:DF:63) in your Google Cloud / Firebase Console under package com.krrish.devawalls.');
+        setError(
+          'Developer Error (10): Register these three EAS Keystore SHA-1 fingerprints in your Google Cloud / Firebase Console under package com.krrish.devawalls:\n' +
+          '1) A2:B3:CD:18:48:AD:B6:FE:AE:E0:D0:2A:0D:31:B9:B9:BD:FB:DF:63\n' +
+          '2) FB:D2:6F:3F:6E:71:9A:6F:38:B4:00:6F:84:2A:E4:74:21:30:66:C1\n' +
+          '3) 91:CA:96:13:74:3A:33:7B:5F:68:87:78:73:7B:25:68:2D:3D:44:40'
+        );
       } else {
         setError(`Sign in failed: ${err.message || JSON.stringify(err)}`);
       }
