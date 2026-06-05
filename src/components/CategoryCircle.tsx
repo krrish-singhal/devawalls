@@ -17,6 +17,19 @@ export function CategoryCircle({ category, customThumbnailUrl }: CategoryCircleP
   const fallbackUrl = `${API_BASE_URL}/api/wallpapers/thumbnail/${category.id}/1.jpg`;
   const thumbnailUrl = customThumbnailUrl || fallbackUrl;
 
+  // Dynamically resolve crop positions to center deity faces perfectly
+  const getContentPosition = () => {
+    if (category.id === 'shiv') {
+      // Shift down slightly to center Shiv's face (avoiding top empty space)
+      return { top: '15%', left: '50%' };
+    }
+    if (category.id === 'ganesh') {
+      // Shift down slightly to center Ganesha's face (avoiding top empty space)
+      return { top: '12%', left: '50%' };
+    }
+    return 'top';
+  };
+
   return (
     <TouchableOpacity
       className="items-center mr-5"
@@ -44,7 +57,7 @@ export function CategoryCircle({ category, customThumbnailUrl }: CategoryCircleP
           source={{ uri: thumbnailUrl }}
           style={{ width: '100%', height: '100%', borderRadius: 42 }}
           contentFit="cover"
-          contentPosition="top"
+          contentPosition={getContentPosition()}
           cachePolicy="memory-disk"
           placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
           transition={250}
