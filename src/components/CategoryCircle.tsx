@@ -20,12 +20,12 @@ export function CategoryCircle({ category, customThumbnailUrl }: CategoryCircleP
   // Dynamically resolve crop positions to center deity faces perfectly
   const getContentPosition = () => {
     if (category.id === 'shiv') {
-      // Shift slightly higher up to position Shiv's face above
-      return { top: '5%', left: '50%' };
+      // Shift viewpoint down to center Shiv's face in the circle
+      return { top: '25%', left: '50%' };
     }
     if (category.id === 'ganesh') {
-      // Shift slightly higher up to position Ganesha's face above
-      return { top: '3%', left: '50%' };
+      // Shift viewpoint down to center Ganesha's face in the circle
+      return { top: '22%', left: '50%' };
     }
     return 'top';
   };
