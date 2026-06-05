@@ -38,7 +38,16 @@ app.use('/wallpapers', express.static(path.join(__dirname, '../../public/wallpap
 app.use('/api/auth', authRoutes);
 app.use('/api/wallpapers', wallpapersRoutes);
 
-// Health check
+// Health check & welcome routes
+app.get('/', (req, res) => {
+  res.json({
+    name: 'Deva Walls API',
+    version: '1.0.0',
+    status: 'online',
+    documentation: 'https://github.com/krrish-singhal/devawalls'
+  });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
