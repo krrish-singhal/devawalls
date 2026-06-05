@@ -30,7 +30,7 @@ export default function CategoryScreen() {
   useEffect(() => {
     if (wallpapers) {
       wallpapers.forEach((wp) => {
-        Image.prefetch(wp.imageUrl);
+        Image.prefetch(wp.thumbnailUrl);
       });
     }
   }, [wallpapers]);
@@ -78,7 +78,7 @@ export default function CategoryScreen() {
           }
           renderItem={({ item }) => (
             <WallpaperCard
-              imageUrl={item.imageUrl}
+              imageUrl={item.thumbnailUrl}
               onPress={() => router.push(`/wallpaper/${item.id}`)}
               size="grid"
             />

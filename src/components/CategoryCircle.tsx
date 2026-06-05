@@ -13,8 +13,8 @@ interface CategoryCircleProps {
 export function CategoryCircle({ category, customThumbnailUrl }: CategoryCircleProps) {
   const API_BASE_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:4000').replace('/api', '');
   
-  // Dynamic fallback URL with minute-based cache busting if featured image payload isn't ready
-  const fallbackUrl = `${API_BASE_URL}/wallpapers/${category.id}/1.jpg?v=${new Date().getMinutes()}`;
+  // Dynamic fallback URL with minute-based cache busting pointing to optimized thumbnail endpoint
+  const fallbackUrl = `${API_BASE_URL}/api/wallpapers/thumbnail/${category.id}/1.jpg`;
   const thumbnailUrl = customThumbnailUrl || fallbackUrl;
 
   return (

@@ -30,7 +30,7 @@ export default function HomeScreen() {
   useEffect(() => {
     if (featuredWallpapers) {
       featuredWallpapers.forEach((wp) => {
-        Image.prefetch(wp.imageUrl);
+        Image.prefetch(wp.thumbnailUrl);
       });
     }
   }, [featuredWallpapers]);
@@ -39,7 +39,7 @@ export default function HomeScreen() {
   useEffect(() => {
     if (latestWallpapers) {
       latestWallpapers.forEach((wp) => {
-        Image.prefetch(wp.imageUrl);
+        Image.prefetch(wp.thumbnailUrl);
       });
     }
   }, [latestWallpapers]);
@@ -141,7 +141,7 @@ export default function HomeScreen() {
               renderItem={({ item }) => (
                 <View style={{ marginRight: 8 }}>
                   <WallpaperCard
-                    imageUrl={item.imageUrl}
+                    imageUrl={item.thumbnailUrl}
                     onPress={() => router.push(`/wallpaper/${item.id}`)}
                     size="featured"
                   />
@@ -172,7 +172,7 @@ export default function HomeScreen() {
               scrollEnabled={false}
               renderItem={({ item }) => (
                 <WallpaperCard
-                  imageUrl={item.imageUrl}
+                  imageUrl={item.thumbnailUrl}
                   onPress={() => router.push(`/wallpaper/${item.id}`)}
                   size="grid"
                 />
