@@ -60,7 +60,7 @@ export default function LoginScreen() {
       ) {
         setError('Developer Error (10): Please register the EAS Android Keystore SHA-1 (A2:B3:CD:18:48:AD:B6:FE:AE:E0:D0:2A:0D:31:B9:B9:BD:FB:DF:63) in your Google Cloud / Firebase Console under package com.krrish.devawalls.');
       } else {
-        setError('Sign in failed. Please try again.');
+        setError(`Sign in failed: ${err.message || JSON.stringify(err)}`);
       }
       setLoading(false);
     }
@@ -80,9 +80,9 @@ export default function LoginScreen() {
         isProfileComplete: !!authResponse.user.name,
       });
       router.replace('/splash');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Sign in failed:', err);
-      setError('Sign in failed. Please try again.');
+      setError(`Backend verification failed: ${err.message || JSON.stringify(err)}`);
       setLoading(false);
     }
   };
