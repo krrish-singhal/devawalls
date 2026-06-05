@@ -19,15 +19,24 @@ export function CategoryCircle({ category, customThumbnailUrl }: CategoryCircleP
 
   // Dynamically resolve crop positions to center deity faces perfectly
   const getContentPosition = () => {
-    if (category.id === 'shiv') {
-      // Shift viewpoint down to push image content up and center Shiv's face
-      return { top: '35%', left: '50%' };
+    switch (category.id) {
+      case 'shiv':
+        // Shift viewpoint down to push image content up and center Shiv's face
+        return { top: '35%', left: '50%' };
+      case 'ganesh':
+        // Shift viewpoint down slightly more to push Ganesha's face into center
+        return { top: '38%', left: '50%' };
+      case 'ram':
+        return { top: '0%', left: '50%' };
+      case 'maa_durga':
+        return { top: '0%', left: '50%' };
+      case 'hanuman':
+        return { top: '0%', left: '50%' };
+      case 'krishna':
+        return { top: '0%', left: '50%' };
+      default:
+        return { top: '0%', left: '50%' };
     }
-    if (category.id === 'ganesh') {
-      // Shift viewpoint down to push image content up and center Ganesha's face
-      return { top: '30%', left: '50%' };
-    }
-    return 'top';
   };
 
   return (
