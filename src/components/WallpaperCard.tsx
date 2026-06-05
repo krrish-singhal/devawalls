@@ -1,3 +1,4 @@
+import React from 'react';
 import { TouchableOpacity, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 
@@ -7,7 +8,7 @@ interface WallpaperCardProps {
   size?: 'grid' | 'featured';
 }
 
-export function WallpaperCard({ imageUrl, onPress, size = 'grid' }: WallpaperCardProps) {
+export const WallpaperCard = React.memo(function WallpaperCard({ imageUrl, onPress, size = 'grid' }: WallpaperCardProps) {
   const screenWidth = Dimensions.get('window').width;
 
   const cardWidth = size === 'featured'
@@ -33,4 +34,4 @@ export function WallpaperCard({ imageUrl, onPress, size = 'grid' }: WallpaperCar
       />
     </TouchableOpacity>
   );
-}
+});

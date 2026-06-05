@@ -1,4 +1,6 @@
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Image as RNImage } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Image as RNImage } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
@@ -58,7 +60,7 @@ export default function ProfileSetupScreen() {
       if (photoUri) {
         setProfilePhoto(photoUri);
       }
-      router.replace('/(tabs)/');
+      router.replace('/home');
     } catch (err) {
       console.error('Profile update error:', err);
       alert('Failed to save profile. Please try again.');
@@ -68,7 +70,7 @@ export default function ProfileSetupScreen() {
 
   const handleSkip = () => {
     setUser({ isProfileComplete: true });
-    router.replace('/(tabs)/');
+    router.replace('/home');
   };
 
   return (
@@ -95,7 +97,7 @@ export default function ProfileSetupScreen() {
               />
             ) : (
               <>
-                <Text className="text-3xl mb-2">📷</Text>
+                <Ionicons name="camera" size={32} color="#F5C518" style={{ marginBottom: 8 }} />
                 <Text className="text-primary text-xs text-center">Add Photo</Text>
               </>
             )}
@@ -129,8 +131,10 @@ export default function ProfileSetupScreen() {
         <TouchableOpacity
           onPress={handleSkip}
           disabled={loading}
+          className="flex-row items-center justify-center"
         >
-          <Text className="text-primary text-center font-semibold">Skip for now →</Text>
+          <Text className="text-primary text-center font-semibold mr-1">Skip for now</Text>
+          <Ionicons name="arrow-forward" size={16} color="#F5C518" />
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

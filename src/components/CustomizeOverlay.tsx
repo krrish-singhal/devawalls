@@ -1,4 +1,5 @@
 import { View, TouchableOpacity, Text, Dimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface CustomizeOverlayProps {
   onBigger: () => void;
@@ -27,13 +28,14 @@ export function CustomizeOverlay({
 }: CustomizeOverlayProps) {
   const buttonSize = (screenWidth - 32) / 4;
 
-  const Button = ({ label, onPress }: { label: string; onPress: () => void }) => (
+  const Button = ({ label, icon, onPress }: { label: string; icon: keyof typeof Ionicons.glyphMap; onPress: () => void }) => (
     <TouchableOpacity
       onPress={onPress}
       className="bg-primary rounded-lg items-center justify-center p-2"
       style={{ width: buttonSize - 4, height: buttonSize - 4 }}
     >
-      <Text className="text-dark font-bold text-xs text-center">{label}</Text>
+      <Ionicons name={icon} size={20} color="#0F0F0F" style={{ marginBottom: 4 }} />
+      <Text className="text-dark font-bold text-[10px] text-center">{label}</Text>
     </TouchableOpacity>
   );
 
@@ -41,21 +43,21 @@ export function CustomizeOverlay({
     <View className="bg-dark border-t border-primary p-4">
       {/* Size controls */}
       <View className="flex-row gap-2 mb-3">
-        <Button label="➕ Bigger" onPress={onBigger} />
-        <Button label="➖ Smaller" onPress={onSmaller} />
-        <Button label="🔄 Change" onPress={onChangePhoto} />
-        <Button label="✕ Remove" onPress={onRemove} />
+        <Button label="Bigger" icon="add" onPress={onBigger} />
+        <Button label="Smaller" icon="remove" onPress={onSmaller} />
+        <Button label="Change" icon="refresh" onPress={onChangePhoto} />
+        <Button label="Remove" icon="close" onPress={onRemove} />
       </View>
 
       {/* Position controls */}
       <View className="flex-row gap-2">
-        <Button label="↑ Up" onPress={onUp} />
-        <Button label="↓ Down" onPress={onDown} />
-        <Button label="← Left" onPress={onLeft} />
-        <Button label="→ Right" onPress={onRight} />
+        <Button label="Up" icon="arrow-up" onPress={onUp} />
+        <Button label="Down" icon="arrow-down" onPress={onDown} />
+        <Button label="Left" icon="arrow-back" onPress={onLeft} />
+        <Button label="Right" icon="arrow-forward" onPress={onRight} />
       </View>
 
-      <Text className="text-textMuted text-xs mt-2">Size: {photoSize}px</Text>
+      <Text className="text-textMuted text-xs mt-2 text-center font-semibold">Size: {photoSize}px</Text>
     </View>
   );
 }

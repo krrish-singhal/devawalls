@@ -16,12 +16,18 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F0F0F"
       },
-      "package": "com.yourname.devawalls",
+      "package": "com.krrish.devawalls",
       "permissions": [
-        "READ_MEDIA_IMAGES",
-        "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE",
-        "INTERNET"
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.INTERNET",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SET_WALLPAPER"
       ]
     },
     "plugins": [
@@ -39,8 +45,16 @@
         {
           "photosPermission": "Allow Deva Walls to use your photos for wallpaper customization."
         }
-      ]
+      ],
+      "@react-native-google-signin/google-signin",
+      "expo-font"
     ],
-    "scheme": "devawalls"
+    "scheme": "devawalls",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "08843d53-8beb-4bcf-83b5-4142c4e5f21a"
+      }
+    }
   }
 }

@@ -1,4 +1,7 @@
-import { View, Text, SafeAreaView } from 'react-native';
+import { View, Text } from 'react-native';
+import { Image } from 'expo-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withDelay, Easing } from 'react-native-reanimated';
 import { useEffect } from 'react';
 import { router } from 'expo-router';
@@ -36,8 +39,11 @@ export default function SplashScreen() {
   return (
     <SafeAreaView className="flex-1 bg-dark">
       <View className="flex-1 justify-center items-center">
-        {/* Logo */}
-        <Text className="text-8xl mb-8">🪷</Text>
+        <Image
+          source={require('../assets/logo.png')}
+          style={{ width: 100, height: 100, marginBottom: 32, borderRadius: 16 }}
+          contentFit="contain"
+        />
 
         {/* App name */}
         <Text className="text-4xl font-bold text-primary text-center mb-2">Deva Walls</Text>
