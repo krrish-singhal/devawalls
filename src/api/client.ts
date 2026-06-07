@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/authStore';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:4000/api';
 
-console.log(`📡 [API CLIENT] Base URL: ${BASE_URL}`);
+console.log(`[API CLIENT] Base URL: ${BASE_URL}`);
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -22,11 +22,11 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log(`📤 [API] ${config.method?.toUpperCase()} ${config.url}`);
+    console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
   (error) => {
-    console.error('❌ [API] Request error:', error);
+    console.error('[API] Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -34,7 +34,7 @@ apiClient.interceptors.request.use(
 // ─── Response Interceptor: Handle errors globally ────────────────────────────
 apiClient.interceptors.response.use(
   (response) => {
-    console.log(`📥 [API] ${response.status} ${response.config.url}`);
+    console.log(`[API] ${response.status} ${response.config.url}`);
     return response;
   },
   (error: AxiosError) => {
@@ -44,16 +44,16 @@ apiClient.interceptors.response.use(
 
     // Enhanced error logging
     if (error.code === 'ECONNABORTED') {
-      console.error(`❌ [API] TIMEOUT: ${url} — server took too long to respond`);
+      console.error(`[API] TIMEOUT: ${url} — server took too long to respond`);
     } else if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-      console.error(`❌ [API] NETWORK ERROR: Cannot reach ${BASE_URL} — check your internet or API URL`);
+      console.error(`[API] NETWORK ERROR: Cannot reach ${BASE_URL} — check your internet or API URL`);
     } else {
-      console.error(`❌ [API] ${status || 'ERR'} ${url}`, data || error.message);
+      console.error(`[API] ${status || 'ERR'} ${url}`, data || error.message);
     }
 
     // Handle 401 globally — clear auth state
     if (status === 401) {
-      console.warn('🔒 [API] 401 Unauthorized — clearing auth');
+      console.warn('[API] 401 Unauthorized — clearing auth');
       useAuthStore.getState().clearAuth();
     }
 

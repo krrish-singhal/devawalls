@@ -17,7 +17,7 @@ if (
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
-  console.log('✅ Cloudinary configured');
+  console.log('Cloudinary configured');
 }
 
 // ─── Google OAuth2 Client ─────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ async function uploadGooglePhotoToCloudinary(photoUrl: string, userId: string): 
       !process.env.CLOUDINARY_API_KEY ||
       !process.env.CLOUDINARY_API_SECRET
     ) {
-      console.warn('⚠️ Cloudinary not configured, using Google photo URL directly');
+      console.warn('Cloudinary not configured, using Google photo URL directly');
       return photoUrl;
     }
 
@@ -52,10 +52,10 @@ async function uploadGooglePhotoToCloudinary(photoUrl: string, userId: string): 
       transformation: [{ width: 200, height: 200, crop: 'fill', gravity: 'face' }],
     });
 
-    console.log(`✅ Google photo uploaded to Cloudinary: ${result.secure_url}`);
+    console.log(`Google photo uploaded to Cloudinary: ${result.secure_url}`);
     return result.secure_url;
   } catch (err) {
-    console.error('⚠️ Failed to upload Google photo to Cloudinary, using original URL:', err);
+    console.error('Failed to upload Google photo to Cloudinary, using original URL:', err);
     return photoUrl; // Graceful fallback — never block sign-in
   }
 }
@@ -67,15 +67,15 @@ router.post('/google', async (req: Request, res: Response) => {
   try {
     const { idToken } = req.body;
 
-    console.log('🔐 [AUTH] Google sign-in request received');
+    console.log('[AUTH] Google sign-in request received');
 
     if (!idToken) {
-      console.error('❌ [AUTH] No idToken in request body');
+      console.error('[AUTH] No idToken in request body');
       return res.status(400).json({ error: 'Google ID token is required' });
     }
 
     // ── Verify Google ID token cryptographically ──────────────────────────────
-    console.log('🔍 [AUTH] Verifying Google ID token...');
+    console.log('[AUTH] Verifying Google ID token...');
     let payload: Record<string, any>;
     try {
       const ticket = await googleClient.verifyIdToken({
@@ -89,13 +89,13 @@ router.post('/google', async (req: Request, res: Response) => {
       if (!p) throw new Error('Empty payload from Google');
       payload = p;
     } catch (verifyErr: any) {
-      console.error('❌ [AUTH] Google token verification failed:', verifyErr.message);
+      console.error('[AUTH] Google token verification failed:', verifyErr.message);
       return res.status(401).json({ error: 'Invalid or expired Google token' });
     }
 
     // Validate issuer
     if (payload.iss !== 'accounts.google.com' && payload.iss !== 'https://accounts.google.com') {
-      console.error('❌ [AUTH] Invalid token issuer:', payload.iss);
+      console.error('[AUTH] Invalid token issuer:', payload.iss);
       return res.status(401).json({ error: 'Invalid token issuer' });
     }
 
@@ -108,14 +108,14 @@ router.post('/google', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Incomplete Google profile data' });
     }
 
-    console.log(`✅ [AUTH] Google token verified for: ${email}`);
+    console.log(`[AUTH] Google token verified for: ${email}`);
 
     // ── Find or create user ───────────────────────────────────────────────────
     let finalUser: IUser;
     const existingUser = await User.findOne({ googleId });
 
     if (!existingUser) {
-      console.log(`🆕 [AUTH] Creating new user: ${email}`);
+      console.log(`[AUTH] Creating new user: ${email}`);
 
       // Upload Google profile photo to Cloudinary for new users
       let profilePhotoUrl = picture || '';
@@ -131,9 +131,9 @@ router.post('/google', async (req: Request, res: Response) => {
       });
       await newUser.save();
       finalUser = newUser;
-      console.log(`✅ [AUTH] New user created with id: ${finalUser._id}`);
+      console.log(`[AUTH] New user created with id: ${finalUser._id}`);
     } else {
-      console.log(`🔄 [AUTH] Existing user logged in: ${email}`);
+      console.log(`[AUTH] Existing user logged in: ${email}`);
 
       // If user still has raw Google URL (not Cloudinary), migrate it now
       if (
@@ -141,7 +141,7 @@ router.post('/google', async (req: Request, res: Response) => {
         existingUser.profilePhoto &&
         existingUser.profilePhoto.includes('googleusercontent.com')
       ) {
-        console.log('🔄 [AUTH] Migrating Google photo to Cloudinary...');
+        console.log('[AUTH] Migrating Google photo to Cloudinary...');
         const newPhoto = await uploadGooglePhotoToCloudinary(picture, googleId);
         if (newPhoto !== picture) {
           existingUser.profilePhoto = newPhoto;
@@ -155,7 +155,7 @@ router.post('/google', async (req: Request, res: Response) => {
     // ── Generate application JWT ──────────────────────────────────────────────
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      console.error('❌ [AUTH] JWT_SECRET is not set');
+      console.error('[AUTH] JWT_SECRET is not set');
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
@@ -165,7 +165,7 @@ router.post('/google', async (req: Request, res: Response) => {
       { expiresIn: '30d' }
     );
 
-    console.log(`✅ [AUTH] JWT generated for user: ${finalUser._id}`);
+    console.log(`[AUTH] JWT generated for user: ${finalUser._id}`);
 
     return res.json({
       token,
@@ -177,7 +177,7 @@ router.post('/google', async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error('❌ [AUTH] Unexpected error during Google auth:', error);
+    console.error('[AUTH] Unexpected error during Google auth:', error);
     return res.status(500).json({ error: 'Authentication failed. Please try again.' });
   }
 });
@@ -212,9 +212,9 @@ router.patch('/profile', authMiddleware, async (req: Request, res: Response) => 
             }
           );
           profilePhotoUrl = uploadResponse.secure_url;
-          console.log(`✅ [PROFILE] Photo uploaded to Cloudinary: ${profilePhotoUrl}`);
+          console.log(`[PROFILE] Photo uploaded to Cloudinary: ${profilePhotoUrl}`);
         } catch (cloudinaryError) {
-          console.error('⚠️ [PROFILE] Cloudinary upload failed:', cloudinaryError);
+          console.error('[PROFILE] Cloudinary upload failed:', cloudinaryError);
           profilePhotoUrl = `data:image/jpeg;base64,${profilePhotoBase64}`;
         }
       } else {
@@ -244,7 +244,7 @@ router.patch('/profile', authMiddleware, async (req: Request, res: Response) => 
       },
     });
   } catch (error) {
-    console.error('❌ [PROFILE] Profile update error:', error);
+    console.error('[PROFILE] Profile update error:', error);
     return res.status(500).json({ error: 'Profile update failed' });
   }
 });

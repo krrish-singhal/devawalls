@@ -9,7 +9,7 @@ export const authApi = {
    * @param idToken - The Google ID token from Expo AuthSession.
    */
   async googleSignIn(idToken: string): Promise<AuthResponse> {
-    console.log('📡 [API] POST /auth/google with idToken');
+    console.log('[API] POST /auth/google with idToken');
     const response = await apiClient.post('/auth/google', { idToken });
     return response.data;
   },
@@ -20,7 +20,7 @@ export const authApi = {
    * The backend will upload it to Cloudinary.
    */
   async updateProfile(name: string, profilePhotoBase64?: string): Promise<AuthResponse> {
-    console.log('📡 [API] PATCH /auth/profile');
+    console.log('[API] PATCH /auth/profile');
     const response = await apiClient.patch('/auth/profile', { name, profilePhotoBase64 });
     return response.data;
   },

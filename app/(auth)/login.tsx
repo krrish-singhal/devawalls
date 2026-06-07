@@ -34,7 +34,7 @@ export default function LoginScreen() {
         return;
       }
 
-      console.log('🔐 [GOOGLE] Starting Native Google sign in...');
+      console.log('[GOOGLE] Starting Native Google sign in...');
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
 
@@ -53,7 +53,7 @@ export default function LoginScreen() {
          setLoading(false);
       }
     } catch (err: any) {
-      console.error('❌ [GOOGLE] Native Sign-In error:', err);
+      console.error('[GOOGLE] Native Sign-In error:', err);
 
       if (isErrorWithCode(err)) {
         switch (err.code) {
@@ -79,12 +79,12 @@ export default function LoginScreen() {
 
   const handleBackendVerification = async (idToken: string) => {
     try {
-      console.log('📡 [BACKEND] Sending ID token to backend for verification...');
-      console.log(`📡 [BACKEND] API URL: ${process.env.EXPO_PUBLIC_API_URL}`);
+      console.log('[BACKEND] Sending ID token to backend for verification...');
+      console.log(`[BACKEND] API URL: ${process.env.EXPO_PUBLIC_API_URL}`);
 
       const authResponse = await authApi.googleSignIn(idToken);
 
-      console.log('✅ [BACKEND] Verification successful, user:', authResponse.user.email);
+      console.log('[BACKEND] Verification successful, user:', authResponse.user.email);
 
       setToken(authResponse.token);
       setUser({
@@ -95,11 +95,11 @@ export default function LoginScreen() {
         isProfileComplete: !!(authResponse.user.name && authResponse.user.name.trim().length > 0),
       });
 
-      console.log('✅ [AUTH] User state set, navigating to splash...');
+      console.log('[AUTH] User state set, navigating to splash...');
       router.replace('/splash');
     } catch (err: any) {
       console.error(
-        '❌ [BACKEND] Verification failed:',
+        '[BACKEND] Verification failed:',
         err?.response?.data || err?.message || err
       );
 

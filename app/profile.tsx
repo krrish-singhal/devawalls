@@ -14,7 +14,7 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     try {
-      console.log('🔓 [LOGOUT] Signing out...');
+      console.log('[LOGOUT] Signing out...');
 
       if (googleAccessToken) {
         await revokeAsync(
@@ -24,14 +24,14 @@ export default function ProfileScreen() {
           },
           googleDiscovery
         );
-        console.log('✅ [LOGOUT] Google access token revoked');
+        console.log('[LOGOUT] Google access token revoked');
       }
     } catch (err) {
-      console.warn('⚠️ [LOGOUT] Google session revoke failed (non-fatal):', err);
+      console.warn('[LOGOUT] Google session revoke failed (non-fatal):', err);
     } finally {
       clearUser();
       clearAuth();
-      console.log('✅ [LOGOUT] Local state cleared, redirecting to login');
+      console.log('[LOGOUT] Local state cleared, redirecting to login');
       router.replace('/(auth)/login');
     }
   };
