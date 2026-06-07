@@ -2,20 +2,28 @@ import React from 'react';
 import { TouchableOpacity, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 
+// Computed once at module level — avoids re-computation on every render
+const { width: screenWidth } = Dimensions.get('window');
+
+const FEATURED_CARD_WIDTH = screenWidth * 0.42;
+const FEATURED_CARD_HEIGHT = FEATURED_CARD_WIDTH / (9 / 16);
+
+const GRID_CARD_WIDTH = (screenWidth - 40) / 2; // 16px padding each side + 8px gap
+const GRID_CARD_HEIGHT = GRID_CARD_WIDTH / (9 / 16);
+
 interface WallpaperCardProps {
   imageUrl: string;
   onPress: () => void;
   size?: 'grid' | 'featured';
 }
 
-export const WallpaperCard = React.memo(function WallpaperCard({ imageUrl, onPress, size = 'grid' }: WallpaperCardProps) {
-  const screenWidth = Dimensions.get('window').width;
-
-  const cardWidth = size === 'featured'
-    ? screenWidth * 0.42
-    : (screenWidth - 40) / 2;   // 16px padding each side + 8px gap
-
-  const cardHeight = cardWidth / (9 / 16);  // ALWAYS enforce 9:16 ratio
+export const WallpaperCard = React.memo(function WallpaperCard({
+  imageUrl,
+  onPress,
+  size = 'grid',
+}: WallpaperCardProps) {
+  const cardWidth = size === 'featured' ? FEATURED_CARD_WIDTH : GRID_CARD_WIDTH;
+  const cardHeight = size === 'featured' ? FEATURED_CARD_HEIGHT : GRID_CARD_HEIGHT;
 
   return (
     <TouchableOpacity

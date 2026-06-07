@@ -5,15 +5,35 @@ import { Ionicons } from '@expo/vector-icons';
 import { useUserStore } from '@/stores/userStore';
 import { useAuthStore } from '@/stores/authStore';
 import { router } from 'expo-router';
+import { revokeAsync, TokenTypeHint } from 'expo-auth-session';
+import { discovery as googleDiscovery } from 'expo-auth-session/providers/google';
 
 export default function ProfileScreen() {
   const { name, email, profilePhoto, clearUser } = useUserStore();
-  const { clearAuth } = useAuthStore();
+  const { googleAccessToken, clearAuth } = useAuthStore();
 
-  const handleLogout = () => {
-    clearUser();
-    clearAuth();
-    router.replace('/(auth)/login');
+  const handleLogout = async () => {
+    try {
+      console.log('🔓 [LOGOUT] Signing out...');
+
+      if (googleAccessToken) {
+        await revokeAsync(
+          {
+            token: googleAccessToken,
+            tokenTypeHint: TokenTypeHint.AccessToken,
+          },
+          googleDiscovery
+        );
+        console.log('✅ [LOGOUT] Google access token revoked');
+      }
+    } catch (err) {
+      console.warn('⚠️ [LOGOUT] Google session revoke failed (non-fatal):', err);
+    } finally {
+      clearUser();
+      clearAuth();
+      console.log('✅ [LOGOUT] Local state cleared, redirecting to login');
+      router.replace('/(auth)/login');
+    }
   };
 
   return (
@@ -46,7 +66,7 @@ export default function ProfileScreen() {
             <Text className="text-textMuted text-sm mb-1">Name</Text>
             <Text className="text-white text-lg font-semibold">{name || 'Devotee'}</Text>
           </View>
-          
+
           <View>
             <Text className="text-textMuted text-sm mb-1">Email</Text>
             <Text className="text-white text-lg font-semibold">{email || 'Not provided'}</Text>

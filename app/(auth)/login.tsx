@@ -1,93 +1,128 @@
 import { View, TouchableOpacity, Text, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
+import { GoogleSignin, statusCodes, isSuccessResponse, isErrorWithCode } from '@react-native-google-signin/google-signin';
 import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 import { router } from 'expo-router';
 
-let GoogleSignin: any;
-let statusCodes: any;
+const googleWebClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
 
-try {
-  const GoogleModule = require('@react-native-google-signin/google-signin');
-  GoogleSignin = GoogleModule.GoogleSignin;
-  statusCodes = GoogleModule.statusCodes;
-  
-  GoogleSignin.configure({
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    offlineAccess: false,
-  });
-} catch (e) {
-  console.warn('GoogleSignin native module is not available. Falling back to dev mode bypass.');
-}
+GoogleSignin.configure({
+  webClientId: googleWebClientId,
+  scopes: ['openid', 'profile', 'email'],
+  offlineAccess: false,
+});
 
 export default function LoginScreen() {
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
   const setToken = useAuthStore((state) => state.setToken);
+  const setGoogleAccessToken = useAuthStore((state) => state.setGoogleAccessToken);
   const setUser = useUserStore((state) => state.setUser);
 
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
       setError('');
-      
+
+      if (!googleWebClientId) {
+        setError('Google sign in is not configured. Set EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID.');
+        setLoading(false);
+        return;
+      }
+
+      console.log('🔐 [GOOGLE] Starting Native Google sign in...');
       await GoogleSignin.hasPlayServices();
-      await GoogleSignin.signIn();
-      const tokens = await GoogleSignin.getTokens();
-      
-      if (tokens.accessToken) {
-        await handleGoogleSuccess(tokens.accessToken);
+      const response = await GoogleSignin.signIn();
+
+      if (isSuccessResponse(response)) {
+        const idToken = response.data.idToken;
+        if (!idToken) {
+          setError('Google sign in completed, but no ID token was returned.');
+          setLoading(false);
+          return;
+        }
+
+        setGoogleAccessToken(null);
+        await handleBackendVerification(idToken);
       } else {
-        throw new Error('No access token returned from Google');
+         setError('Sign in was cancelled.');
+         setLoading(false);
       }
     } catch (err: any) {
-      console.error('Sign in failed:', err);
-      if (err.code === statusCodes.SIGN_IN_CANCELLED) {
-        setError('Sign in cancelled');
-      } else if (err.code === statusCodes.IN_PROGRESS) {
-        setError('Sign in already in progress');
-      } else if (err.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        setError('Google Play Services not available');
-      } else if (
-        err.code === '10' || 
-        err.code === 10 || 
-        err.message?.includes('10') || 
-        err.message?.includes('DEVELOPER_ERROR')
-      ) {
-        setError(
-          'Developer Error (10): Register these three EAS Keystore SHA-1 fingerprints in your Google Cloud / Firebase Console under package com.krrish.devawalls:\n' +
-          '1) A2:B3:CD:18:48:AD:B6:FE:AE:E0:D0:2A:0D:31:B9:B9:BD:FB:DF:63\n' +
-          '2) FB:D2:6F:3F:6E:71:9A:6F:38:B4:00:6F:84:2A:E4:74:21:30:66:C1\n' +
-          '3) 91:CA:96:13:74:3A:33:7B:5F:68:87:78:73:7B:25:68:2D:3D:44:40'
-        );
+      console.error('❌ [GOOGLE] Native Sign-In error:', err);
+
+      if (isErrorWithCode(err)) {
+        switch (err.code) {
+          case statusCodes.IN_PROGRESS:
+            setError('Google sign in is already in progress.');
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            setError('Google Play Services is not available or outdated.');
+            break;
+          case statusCodes.SIGN_IN_CANCELLED:
+            setError('Sign in was cancelled.');
+            break;
+          default:
+            setError(`Sign in failed: ${err.message || 'Unknown error code'}`);
+        }
       } else {
-        setError(`Sign in failed: ${err.message || JSON.stringify(err)}`);
+        setError(`Sign in failed: ${err?.message || 'Unexpected Google authentication error.'}`);
       }
+
       setLoading(false);
     }
   };
 
-  const handleGoogleSuccess = async (accessToken: string) => {
+  const handleBackendVerification = async (idToken: string) => {
     try {
-      setLoading(true);
-      setError('');
-      const authResponse = await authApi.googleSignIn(accessToken);
+      console.log('📡 [BACKEND] Sending ID token to backend for verification...');
+      console.log(`📡 [BACKEND] API URL: ${process.env.EXPO_PUBLIC_API_URL}`);
+
+      const authResponse = await authApi.googleSignIn(idToken);
+
+      console.log('✅ [BACKEND] Verification successful, user:', authResponse.user.email);
+
       setToken(authResponse.token);
       setUser({
         id: authResponse.user.id,
         name: authResponse.user.name,
         email: authResponse.user.email,
         profilePhoto: authResponse.user.profilePhoto,
-        isProfileComplete: !!authResponse.user.name,
+        isProfileComplete: !!(authResponse.user.name && authResponse.user.name.trim().length > 0),
       });
+
+      console.log('✅ [AUTH] User state set, navigating to splash...');
       router.replace('/splash');
     } catch (err: any) {
-      console.error('Sign in failed:', err);
-      setError(`Backend verification failed: ${err.message || JSON.stringify(err)}`);
+      console.error(
+        '❌ [BACKEND] Verification failed:',
+        err?.response?.data || err?.message || err
+      );
+
+      let errorMessage = 'Backend verification failed. Please try again.';
+
+      if (err?.code === 'ECONNABORTED' || err?.message?.includes('timeout')) {
+        errorMessage =
+          'Connection timed out. The server may be starting up. Please try again in 30 seconds.';
+      } else if (err?.code === 'ERR_NETWORK' || err?.code === 'ECONNREFUSED') {
+        errorMessage =
+          'Cannot connect to the server. Please check your internet connection or try again after the backend wakes up.';
+      } else if (err?.response?.status === 401) {
+        errorMessage = 'Invalid Google token. Please choose your Google account again.';
+      } else if (err?.response?.status === 404) {
+        errorMessage = 'Backend authentication endpoint is unavailable. Please verify the API URL.';
+      } else if (err?.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else if (err?.message) {
+        errorMessage = `Error: ${err.message}`;
+      }
+
+      setError(errorMessage);
+
       setLoading(false);
     }
   };
@@ -97,18 +132,20 @@ export default function LoginScreen() {
       <View className="flex-1 justify-between p-6">
         {/* Top section - Logo and branding */}
         <View className="flex-1 justify-center items-center">
-          <Image 
-            source={require('../../assets/logo.png')} 
-            style={{ width: 80, height: 80, marginBottom: 24, borderRadius: 12 }} 
-            resizeMode="contain" 
+          <Image
+            source={require('../../assets/logo.png')}
+            style={{ width: 80, height: 80, marginBottom: 24, borderRadius: 12 }}
+            resizeMode="contain"
           />
           <Text className="text-4xl font-bold text-primary text-center">Deva Walls</Text>
           <Text className="text-white text-center mt-3 text-base">Sacred Wallpapers for Your Soul</Text>
         </View>
 
-        {/* Bottom section - Sign in button and bypass */}
+        {/* Bottom section */}
         <View className="gap-4">
-          {error && <Text className="text-red-500 text-center text-xs px-2">{error}</Text>}
+          {error ? (
+            <Text className="text-red-400 text-center text-xs px-2 leading-5">{error}</Text>
+          ) : null}
 
           <TouchableOpacity
             onPress={handleGoogleLogin}
@@ -120,17 +157,15 @@ export default function LoginScreen() {
               <ActivityIndicator color="#0F0F0F" />
             ) : (
               <>
-                <Image 
-                  source={require('../../public/google.png')} 
-                  style={{ width: 24, height: 24, marginRight: 12 }} 
+                <Image
+                  source={require('../../public/google.png')}
+                  style={{ width: 24, height: 24, marginRight: 12 }}
                   resizeMode="contain"
                 />
                 <Text className="text-dark font-semibold text-base">Continue with Google</Text>
               </>
             )}
           </TouchableOpacity>
-
-          {/* Sign in button only */}
         </View>
       </View>
     </SafeAreaView>

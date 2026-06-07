@@ -17,6 +17,7 @@
         "backgroundColor": "#0F0F0F"
       },
       "package": "com.krrish.devawalls",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.WRITE_EXTERNAL_STORAGE",
@@ -46,10 +47,13 @@
           "photosPermission": "Allow Deva Walls to use your photos for wallpaper customization."
         }
       ],
-      "@react-native-google-signin/google-signin",
-      "expo-font"
+      "expo-font",
+      "@react-native-google-signin/google-signin"
     ],
-    "scheme": "devawalls",
+    "scheme": [
+      "devawalls",
+      "com.krrish.devawalls"
+    ],
     "extra": {
       "router": {},
       "eas": {

@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Category } from '@/types';
 
+// Strip /api suffix so static asset URLs resolve correctly
 const API_BASE_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:4000').replace('/api', '');
 
 interface CategoryCircleProps {
@@ -11,9 +12,7 @@ interface CategoryCircleProps {
 }
 
 export function CategoryCircle({ category, customThumbnailUrl }: CategoryCircleProps) {
-  const API_BASE_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:4000').replace('/api', '');
-  
-  // Dynamic fallback URL with minute-based cache busting pointing to optimized thumbnail endpoint
+  // Dynamic fallback URL pointing to optimized thumbnail endpoint
   const fallbackUrl = `${API_BASE_URL}/api/wallpapers/thumbnail/${category.id}/1.jpg`;
   const thumbnailUrl = customThumbnailUrl || fallbackUrl;
 
@@ -21,19 +20,13 @@ export function CategoryCircle({ category, customThumbnailUrl }: CategoryCircleP
   const getContentPosition = () => {
     switch (category.id) {
       case 'shiv':
-        // Shift viewpoint down to push image content up and center Shiv's face
         return { top: '35%', left: '50%' };
       case 'ganesh':
-        // Shift viewpoint down slightly more to push Ganesha's face into center
         return { top: '38%', left: '50%' };
       case 'ram':
-        return { top: '0%', left: '50%' };
       case 'maa_durga':
-        return { top: '0%', left: '50%' };
       case 'hanuman':
-        return { top: '0%', left: '50%' };
       case 'krishna':
-        return { top: '0%', left: '50%' };
       default:
         return { top: '0%', left: '50%' };
     }
@@ -54,7 +47,6 @@ export function CategoryCircle({ category, customThumbnailUrl }: CategoryCircleP
           borderColor: '#F5C518',
           backgroundColor: '#1E1E1E',
           overflow: 'hidden',
-          // Premium drop shadows
           elevation: 5,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
@@ -70,9 +62,13 @@ export function CategoryCircle({ category, customThumbnailUrl }: CategoryCircleP
           cachePolicy="memory-disk"
           placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
           transition={250}
+          recyclingKey={thumbnailUrl}
         />
       </View>
-      <Text className="text-white text-xs mt-2 text-center font-semibold" style={{ maxWidth: 84 }}>
+      <Text
+        className="text-white text-xs mt-2 text-center font-semibold"
+        style={{ maxWidth: 84 }}
+      >
         {category.name}
       </Text>
     </TouchableOpacity>
