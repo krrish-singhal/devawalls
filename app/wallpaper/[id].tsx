@@ -360,18 +360,11 @@ export default function WallpaperScreen() {
         fromUri = 'file://' + fromUri;
       }
 
-      // Copy the captured file to a guaranteed JPG file path in cache, exactly like normal wallpaper download
-      const localUri = FileSystem.cacheDirectory + `custom_wallpaper_${Date.now()}.jpg`;
-      await FileSystem.copyAsync({
-        from: fromUri,
-        to: localUri
-      });
-
-      // Save to gallery under DevaWalls Album
-      const asset = await MediaLibrary.createAssetAsync(localUri);
+      // Save to gallery under DevaWalls Album directly using the snapshot URI
+      const asset = await MediaLibrary.createAssetAsync(fromUri);
       await MediaLibrary.createAlbumAsync('DevaWalls', asset, false);
 
-      setDownloadedLocalUri(localUri);
+      setDownloadedLocalUri(fromUri);
       setIsDownloading(false);
       setShowDownloadSuccessModal(true);
       setCustomizeMode(false);
