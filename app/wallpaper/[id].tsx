@@ -336,7 +336,11 @@ export default function WallpaperScreen() {
       // Brief delay to hide the safe area guide before capture
       await new Promise((resolve) => setTimeout(resolve, 150));
 
-      const capturedUri = await captureRef(viewShotRef, {
+      if (!viewShotRef.current) {
+        throw new Error('Workspace canvas not mounted');
+      }
+
+      const capturedUri = await captureRef(viewShotRef.current as any, {
         format: 'jpg',
         quality: 1.0,
       });
