@@ -340,7 +340,7 @@ export default function WallpaperScreen() {
         throw new Error('Workspace canvas capture interface not ready');
       }
 
-      const capturedUri = await captureRef(viewShotRef.current as any, {
+      const capturedUri = await captureRef(viewShotRef.current, {
         format: 'jpg',
         quality: 1.0,
       });
@@ -409,28 +409,27 @@ export default function WallpaperScreen() {
                 />
 
               {/* Safe Area Guide (1080x2400 inside 1440x3200 translates exactly to centered 75%) */}
-              {!isCapturing && (
-                <View
-                  pointerEvents="none"
-                  style={{
-                    position: 'absolute',
-                    top: '12.5%',
-                    left: '12.5%',
-                    width: '75%',
-                    height: '75%',
-                    borderWidth: 1.5,
-                    borderColor: 'rgba(245, 197, 24, 0.45)',
-                    borderStyle: 'dashed',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    paddingTop: 8,
-                  }}
-                >
-                  <Text style={{ color: '#F5C518', fontSize: 10, fontWeight: '600', backgroundColor: 'rgba(0,0,0,0.65)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 }}>
-                    Safe Area Guide (1080 x 2400)
-                  </Text>
-                </View>
-              )}
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  top: '12.5%',
+                  left: '12.5%',
+                  width: '75%',
+                  height: '75%',
+                  borderWidth: 1.5,
+                  borderColor: 'rgba(245, 197, 24, 0.45)',
+                  borderStyle: 'dashed',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  paddingTop: 8,
+                  opacity: isCapturing ? 0 : 1,
+                }}
+              >
+                <Text style={{ color: '#F5C518', fontSize: 10, fontWeight: '600', backgroundColor: 'rgba(0,0,0,0.65)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 }}>
+                  Safe Area Guide (1080 x 2400)
+                </Text>
+              </View>
 
               {/* Draggable and Scalable Profile Picture Overlay */}
               <GestureDetector gesture={composedGesture}>
