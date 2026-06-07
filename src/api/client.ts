@@ -7,8 +7,8 @@ console.log(`[API CLIENT] Base URL: ${BASE_URL}`);
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  // 90 seconds — Render free tier has cold starts up to ~50s
-  timeout: 90000,
+  // 3 minutes — Render free tier has cold starts up to ~50s
+  timeout: 180000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
