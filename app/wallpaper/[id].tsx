@@ -8,7 +8,7 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
-import ViewShot, { captureRef } from 'react-native-view-shot';
+import { captureRef } from 'react-native-view-shot';
 import { useUserStore } from '@/stores/userStore';
 import { useCategoryWallpapers } from '@/hooks/useWallpapers';
 import { CATEGORIES } from '@/constants/categories';
@@ -74,7 +74,7 @@ export default function WallpaperScreen() {
   const savedTranslateY = useSharedValue(0);
 
   const insets = useSafeAreaInsets();
-  const viewShotRef = useRef<ViewShot>(null);
+  const viewShotRef = useRef<View>(null);
 
   // Composed Gestures for Sticker Overlay
   const panGesture = Gesture.Pan()
@@ -336,11 +336,14 @@ export default function WallpaperScreen() {
       // Brief delay to hide the safe area guide before capture
       await new Promise((resolve) => setTimeout(resolve, 150));
 
-      if (!viewShotRef.current || !viewShotRef.current.capture) {
+      if (!viewShotRef.current) {
         throw new Error('Workspace canvas capture interface not ready');
       }
 
-      const capturedUri = await viewShotRef.current.capture();
+      const capturedUri = await captureRef(viewShotRef.current as any, {
+        format: 'jpg',
+        quality: 1.0,
+      });
       setIsCapturing(false);
 
       if (!capturedUri) throw new Error('Capture failed');
@@ -397,7 +400,7 @@ export default function WallpaperScreen() {
 
           {/* Top section - Canvas Workspace */}
           <ScrollView style={{ flex: 0.8 }} contentContainerStyle={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
-            <ViewShot ref={viewShotRef} options={{ format: 'jpg', quality: 1.0 }}>
+            <View collapsable={false} ref={viewShotRef}>
               <View style={{ width: WALLPAPER_WIDTH, height: WALLPAPER_HEIGHT, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
                 <RNImage
                   source={{ uri: cachedWallpaperLocalUri || wallpaperUrl }}
@@ -453,7 +456,7 @@ export default function WallpaperScreen() {
                 </Animated.View>
               </GestureDetector>
               </View>
-            </ViewShot>
+            </View>
           </ScrollView>
 
           {/* Bottom Customization Controls */}
