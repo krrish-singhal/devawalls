@@ -57,8 +57,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "08843d53-8beb-4bcf-83b5-4142c4e5f21a"
+        "projectId": "48392a69-13b5-4c7d-b367-b7bc81cc881f"
       }
-    }
+    },
+    "owner": "krrish-singhal-22"
   }
 }
