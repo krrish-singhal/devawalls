@@ -82,7 +82,35 @@ export default function LoginScreen() {
       console.log('[BACKEND] Sending ID token to backend for verification...');
       console.log(`[BACKEND] API URL: ${process.env.EXPO_PUBLIC_API_URL}`);
 
-      const authResponse = await authApi.googleSignIn(idToken);
+      let authResponse;
+      const retries = 5;
+      const delay = 4000;
+
+      for (let i = 0; i < retries; i++) {
+        try {
+          authResponse = await authApi.googleSignIn(idToken);
+          break;
+        } catch (err: any) {
+          const isTimeoutOrNetwork = 
+            err?.code === 'ECONNABORTED' || 
+            err?.code === 'ERR_NETWORK' ||
+            err?.code === 'ECONNREFUSED' ||
+            err?.message?.includes('timeout') ||
+            err?.message?.includes('Network') ||
+            err?.message?.includes('network');
+
+          if (isTimeoutOrNetwork && i < retries - 1) {
+            console.log(`[Google Auth] Backend may be waking up (Render cold start). Retrying request (${i + 1}/${retries}) in ${delay}ms...`);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            continue;
+          }
+          throw err;
+        }
+      }
+
+      if (!authResponse) {
+        throw new Error('Authentication response empty');
+      }
 
       console.log('[BACKEND] Verification successful, user:', authResponse.user.email);
 

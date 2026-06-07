@@ -353,10 +353,16 @@ export default function WallpaperScreen() {
         return;
       }
 
+      // Prepend file:// scheme if missing (e.g. raw absolute paths returned on some Android versions)
+      let fromUri = capturedUri;
+      if (!fromUri.startsWith('file://')) {
+        fromUri = 'file://' + fromUri;
+      }
+
       // Copy the captured file to a guaranteed JPG file path in cache, exactly like normal wallpaper download
       const localUri = FileSystem.cacheDirectory + `custom_wallpaper_${Date.now()}.jpg`;
       await FileSystem.copyAsync({
-        from: capturedUri,
+        from: fromUri,
         to: localUri
       });
 
@@ -368,9 +374,9 @@ export default function WallpaperScreen() {
       setIsDownloading(false);
       setShowDownloadSuccessModal(true);
       setCustomizeMode(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Save customized failed:', error);
-      Alert.alert('Error', 'Could not save your customized wallpaper. Please try again.');
+      Alert.alert('Error', `Could not save your customized wallpaper. Error: ${error?.message || JSON.stringify(error)}`);
       setIsCapturing(false);
       setIsDownloading(false);
     }
@@ -457,7 +463,7 @@ export default function WallpaperScreen() {
           </ScrollView>
 
           {/* Bottom Customization Controls */}
-          <View className="p-4 bg-card border-t border-primary/20 gap-4">
+          <View className="p-4 bg-card border-t border-primary/20 gap-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
             <Text className="text-center text-textMuted text-xs">
               Pinch to resize & drag your photo anywhere on the wallpaper.
             </Text>
@@ -550,7 +556,7 @@ export default function WallpaperScreen() {
         </View>
 
         {/* Bottom section - Action buttons sheet */}
-        <View style={{ height: '38%' }} className="bg-card rounded-t-3xl p-6 justify-between border-t border-primary/20">
+        <View style={{ height: '38%', paddingBottom: Math.max(insets.bottom, 24) }} className="bg-card rounded-t-3xl p-6 justify-between border-t border-primary/20">
           <View className="mb-2">
             <Text className="text-white font-bold text-xl mb-1">{wallpaperDisplayName}</Text>
             <Text className="text-primary text-sm font-semibold">{categoryDisplayName}</Text>
@@ -647,7 +653,7 @@ export default function WallpaperScreen() {
         onRequestClose={() => setShowSetWallpaperModal(false)}
       >
         <View className="flex-1 bg-black/75 justify-end">
-          <View className="bg-card rounded-t-3xl p-6 border-t border-primary/20" style={{ paddingBottom: Math.max(insets.bottom, 24) }}>
+          <View className="bg-card rounded-t-3xl p-6 border-t border-primary/20" style={{ paddingBottom: Math.max(insets.bottom, 56) }}>
             <View className="items-center mb-4">
               <View className="w-12 h-1 bg-secondary rounded-full mb-3" />
               <Text className="text-white font-bold text-xl">Set Wallpaper</Text>
