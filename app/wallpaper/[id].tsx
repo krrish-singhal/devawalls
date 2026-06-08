@@ -63,7 +63,7 @@ export default function WallpaperScreen() {
   const [downloadedLocalUri, setDownloadedLocalUri] = useState('');
 
   // Editor Capture State
-  const [isCapturing, setIsCapturing] = useState(false);
+  const guideOpacity = useSharedValue(1);
 
   // Reanimated Gesture Values
   const scale = useSharedValue(1);
@@ -74,7 +74,7 @@ export default function WallpaperScreen() {
   const savedTranslateY = useSharedValue(0);
 
   const insets = useSafeAreaInsets();
-  const viewShotRef = useRef<View>(null);
+  const viewShotRef = useRef<any>(null);
 
   // Composed Gestures for Sticker Overlay
   const panGesture = Gesture.Pan()
@@ -331,9 +331,9 @@ export default function WallpaperScreen() {
 
   const saveCustomizedWallpaper = async () => {
     try {
-      setIsCapturing(true);
+      guideOpacity.value = 0; // Hide instantly without React re-render
 
-      // Brief delay to hide the safe area guide before capture
+      // Brief delay to allow native opacity to update
       await new Promise((resolve) => setTimeout(resolve, 150));
 
       if (!viewShotRef.current) {
@@ -344,7 +344,8 @@ export default function WallpaperScreen() {
         format: 'jpg',
         quality: 1.0,
       });
-      setIsCapturing(false);
+      
+      guideOpacity.value = 1; // Restore instantly
 
       if (!capturedUri) throw new Error('Capture failed');
 
@@ -374,7 +375,7 @@ export default function WallpaperScreen() {
     } catch (error: any) {
       console.error('Save customized failed:', error);
       Alert.alert('Error', `Could not save your customized wallpaper. Error: ${error?.message || JSON.stringify(error)}`);
-      setIsCapturing(false);
+      guideOpacity.value = 1;
       setIsDownloading(false);
     }
   };
@@ -400,7 +401,7 @@ export default function WallpaperScreen() {
 
           {/* Top section - Canvas Workspace */}
           <ScrollView style={{ flex: 0.8 }} contentContainerStyle={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
-            <View collapsable={false} ref={viewShotRef}>
+            <Animated.View collapsable={false} ref={viewShotRef}>
               <View style={{ width: WALLPAPER_WIDTH, height: WALLPAPER_HEIGHT, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
                 <RNImage
                   source={{ uri: cachedWallpaperLocalUri || wallpaperUrl }}
@@ -409,27 +410,31 @@ export default function WallpaperScreen() {
                 />
 
               {/* Safe Area Guide (1080x2400 inside 1440x3200 translates exactly to centered 75%) */}
-              <View
+              <Animated.View
                 pointerEvents="none"
-                style={{
-                  position: 'absolute',
-                  top: '12.5%',
-                  left: '12.5%',
-                  width: '75%',
-                  height: '75%',
-                  borderWidth: 1.5,
-                  borderColor: 'rgba(245, 197, 24, 0.45)',
-                  borderStyle: 'dashed',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  paddingTop: 8,
-                  opacity: isCapturing ? 0 : 1,
-                }}
+                style={[
+                  {
+                    position: 'absolute',
+                    top: '12.5%',
+                    left: '12.5%',
+                    width: '75%',
+                    height: '75%',
+                    borderWidth: 1.5,
+                    borderColor: 'rgba(245, 197, 24, 0.45)',
+                    borderStyle: 'dashed',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    paddingTop: 8,
+                  },
+                  useAnimatedStyle(() => ({
+                    opacity: guideOpacity.value
+                  }))
+                ]}
               >
                 <Text style={{ color: '#F5C518', fontSize: 10, fontWeight: '600', backgroundColor: 'rgba(0,0,0,0.65)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 }}>
                   Safe Area Guide (1080 x 2400)
                 </Text>
-              </View>
+              </Animated.View>
 
               {/* Draggable and Scalable Profile Picture Overlay */}
               <GestureDetector gesture={composedGesture}>
@@ -455,7 +460,7 @@ export default function WallpaperScreen() {
                 </Animated.View>
               </GestureDetector>
               </View>
-            </View>
+            </Animated.View>
           </ScrollView>
 
           {/* Bottom Customization Controls */}
