@@ -107,6 +107,12 @@ export default function WallpaperScreen() {
     };
   });
 
+  const guideAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: guideOpacity.value,
+    };
+  });
+
   const wallpaperUrl = useMemo(() => {
     if (!id) return '';
     
@@ -331,21 +337,27 @@ export default function WallpaperScreen() {
 
   const saveCustomizedWallpaper = async () => {
     try {
-      guideOpacity.value = 0; // Hide instantly without React re-render
+      // 1. Disable Guide Layer
+      guideOpacity.value = 0; 
 
-      // Brief delay to allow native opacity to update
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      // 2. Wait 1 frame for Reanimated native UI thread flush
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      // 3. Wait 300ms for gesture/momentum to settle
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       if (!viewShotRef.current) {
         throw new Error('Workspace canvas capture interface not ready');
       }
 
+      // 4. Capture native view tag securely
       const capturedUri = await captureRef(viewShotRef.current, {
         format: 'jpg',
         quality: 1.0,
       });
       
-      guideOpacity.value = 1; // Restore instantly
+      // 5. Restore Guide Layer
+      guideOpacity.value = 1; 
 
       if (!capturedUri) throw new Error('Capture failed');
 
@@ -401,7 +413,8 @@ export default function WallpaperScreen() {
 
           {/* Top section - Canvas Workspace */}
           <ScrollView style={{ flex: 0.8 }} contentContainerStyle={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
-            <Animated.View collapsable={false} ref={viewShotRef}>
+            {/* STABLE WRAPPER: Standard View provides a standard ViewGroup native node to ViewShot, avoiding ClassCastException */}
+            <View collapsable={false} ref={viewShotRef}>
               <View style={{ width: WALLPAPER_WIDTH, height: WALLPAPER_HEIGHT, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
                 <RNImage
                   source={{ uri: cachedWallpaperLocalUri || wallpaperUrl }}
@@ -409,7 +422,7 @@ export default function WallpaperScreen() {
                   resizeMode="cover"
                 />
 
-              {/* Safe Area Guide (1080x2400 inside 1440x3200 translates exactly to centered 75%) */}
+              {/* Safe Area Guide */}
               <Animated.View
                 pointerEvents="none"
                 style={[
@@ -426,9 +439,7 @@ export default function WallpaperScreen() {
                     alignItems: 'center',
                     paddingTop: 8,
                   },
-                  useAnimatedStyle(() => ({
-                    opacity: guideOpacity.value
-                  }))
+                  guideAnimatedStyle
                 ]}
               >
                 <Text style={{ color: '#F5C518', fontSize: 10, fontWeight: '600', backgroundColor: 'rgba(0,0,0,0.65)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 }}>
@@ -460,7 +471,7 @@ export default function WallpaperScreen() {
                 </Animated.View>
               </GestureDetector>
               </View>
-            </Animated.View>
+            </View>
           </ScrollView>
 
           {/* Bottom Customization Controls */}
