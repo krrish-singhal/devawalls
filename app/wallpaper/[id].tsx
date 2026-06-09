@@ -360,7 +360,22 @@ export default function WallpaperScreen() {
 
       console.log("STEP 5 - Starting capture");
       // 4. Capture native view tag securely using the ViewShot native module component
-      const capturedUri = await viewShotRef.current.capture!();
+      let capturedUri: string;
+      try {
+        console.log("CAPTURE BEGIN");
+        capturedUri = await viewShotRef.current.capture!();
+        console.log("CAPTURE SUCCESS", capturedUri);
+      } catch (captureError) {
+        console.error("CAPTURE FAILED");
+        console.error(captureError);
+        Alert.alert(
+          "Capture Error",
+          JSON.stringify(captureError, null, 2)
+        );
+        guideOpacity.value = 1;
+        setIsDownloading(false);
+        return;
+      }
       console.log("STEP 6 - Capture success:", capturedUri);
       
       // 5. Restore Guide Layer
@@ -439,6 +454,16 @@ export default function WallpaperScreen() {
               ref={viewShotRef} 
               options={{ format: 'jpg', quality: 1.0 }}
             >
+              {/* TEMPORARY RED BOX TEST - If this works, the bug is inside the editor tree below */}
+              <View
+                style={{
+                  width: 300,
+                  height: 300,
+                  backgroundColor: "red"
+                }}
+              />
+
+              {/* ORIGINAL EDITOR TREE (Temporarily commented out to isolate capture bug)
               <View style={{ width: WALLPAPER_WIDTH, height: WALLPAPER_HEIGHT, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
                 <RNImage
                   source={{ uri: cachedWallpaperLocalUri || wallpaperUrl }}
@@ -446,7 +471,6 @@ export default function WallpaperScreen() {
                   resizeMode="cover"
                 />
 
-              {/* Safe Area Guide */}
               <Animated.View
                 pointerEvents="none"
                 style={[
@@ -471,7 +495,6 @@ export default function WallpaperScreen() {
                 </Text>
               </Animated.View>
 
-              {/* Draggable and Scalable Profile Picture Overlay */}
               <GestureDetector gesture={composedGesture}>
                 <Animated.View
                   style={[
@@ -495,6 +518,7 @@ export default function WallpaperScreen() {
                 </Animated.View>
               </GestureDetector>
               </View>
+              */}
             </ViewShot>
           </ScrollView>
 
