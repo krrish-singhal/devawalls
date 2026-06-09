@@ -40,7 +40,8 @@ try {
 
 export default function WallpaperScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const categoryId = id ? id.split('_')[0] : '';
+  // Match the wallpaper ID safely against the known CATEGORIES list to support categories with underscores (like maa_durga)
+  const categoryId = id ? CATEGORIES.find(c => id.startsWith(c.id))?.id || id.split('_')[0] : '';
   const { data: categoryWallpapers } = useCategoryWallpapers(categoryId);
   const profilePhoto = useUserStore((state) => state.profilePhoto);
   const setProfilePhoto = useUserStore((state) => state.setProfilePhoto);
@@ -350,27 +351,30 @@ export default function WallpaperScreen() {
       await new Promise((resolve) => setTimeout(resolve, 300));
       console.log("STEP 4 - Delay complete");
 
-      // Diagnostic logs as requested by forensic audit
-      console.log('viewShotRef.current:', viewShotRef.current);
-      console.log('typeof viewShotRef.current:', typeof viewShotRef.current);
-
-      if (!viewShotRef.current) {
-        throw new Error('Workspace canvas capture interface not ready');
-      }
+      console.log('HAS_CAPTURE', typeof viewShotRef.current?.capture);
+      console.log('VIEWSHOT_KEYS', Object.keys(viewShotRef.current || {}));
 
       console.log("STEP 5 - Starting capture");
       // 4. Capture native view tag securely using the ViewShot native module component
-      let capturedUri: string;
+      let capturedUri: string | unknown;
       try {
         console.log("CAPTURE BEGIN");
-        capturedUri = await viewShotRef.current.capture!();
+        capturedUri = await Promise.race([
+          viewShotRef.current.capture!(),
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error("Capture timeout after 10s")),
+              10000
+            )
+          )
+        ]);
         console.log("CAPTURE SUCCESS", capturedUri);
-      } catch (captureError) {
+      } catch (captureError: any) {
         console.error("CAPTURE FAILED");
         console.error(captureError);
         Alert.alert(
           "Capture Error",
-          JSON.stringify(captureError, null, 2)
+          captureError?.message || JSON.stringify(captureError, null, 2)
         );
         guideOpacity.value = 1;
         setIsDownloading(false);
