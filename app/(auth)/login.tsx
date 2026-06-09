@@ -1,7 +1,6 @@
 import { View, TouchableOpacity, Text, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
-import { GoogleSignin, statusCodes, isSuccessResponse, isErrorWithCode } from '@react-native-google-signin/google-signin';
 import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
@@ -9,11 +8,26 @@ import { router } from 'expo-router';
 
 const googleWebClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
 
-GoogleSignin.configure({
-  webClientId: googleWebClientId,
-  scopes: ['openid', 'profile', 'email'],
-  offlineAccess: false,
-});
+let GoogleSignin: any = null;
+let statusCodes: any = {};
+let isSuccessResponse: any = () => false;
+let isErrorWithCode: any = () => false;
+
+try {
+  const GSI = require('@react-native-google-signin/google-signin');
+  GoogleSignin = GSI.GoogleSignin;
+  statusCodes = GSI.statusCodes;
+  isSuccessResponse = GSI.isSuccessResponse;
+  isErrorWithCode = GSI.isErrorWithCode;
+
+  GoogleSignin.configure({
+    webClientId: googleWebClientId,
+    scopes: ['openid', 'profile', 'email'],
+    offlineAccess: false,
+  });
+} catch (e) {
+  console.log('[DEV BYPASS] RNGoogleSignin native module not found. Bypassing for Expo Go.');
+}
 
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
@@ -31,6 +45,23 @@ export default function LoginScreen() {
       if (!googleWebClientId) {
         setError('Google sign in is not configured. Set EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID.');
         setLoading(false);
+        return;
+      }
+
+      if (!GoogleSignin) {
+        console.log('[DEV BYPASS] Simulating Google Sign-In Bypass for Expo Go');
+        
+        // Mock successful login state for local development
+        setToken('dev-mock-token-12345');
+        setUser({
+          id: 'dev-user-id',
+          name: 'Developer Mode',
+          email: 'dev@expo.io',
+          profilePhoto: 'https://ui-avatars.com/api/?name=Dev',
+          isProfileComplete: true,
+        });
+
+        router.replace('/splash');
         return;
       }
 

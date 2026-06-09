@@ -8,7 +8,7 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
-import { captureRef } from 'react-native-view-shot';
+import ViewShot from 'react-native-view-shot';
 import { useUserStore } from '@/stores/userStore';
 import { useCategoryWallpapers } from '@/hooks/useWallpapers';
 import { CATEGORIES } from '@/constants/categories';
@@ -74,7 +74,7 @@ export default function WallpaperScreen() {
   const savedTranslateY = useSharedValue(0);
 
   const insets = useSafeAreaInsets();
-  const viewShotRef = useRef<any>(null);
+  const viewShotRef = useRef<ViewShot>(null);
 
   // Composed Gestures for Sticker Overlay
   const panGesture = Gesture.Pan()
@@ -337,24 +337,31 @@ export default function WallpaperScreen() {
 
   const saveCustomizedWallpaper = async () => {
     try {
+      console.log("STEP 1 - Save button pressed");
       // 1. Disable Guide Layer
       guideOpacity.value = 0; 
+      console.log("STEP 2 - Guide hidden");
 
       // 2. Wait 1 frame for Reanimated native UI thread flush
       await new Promise((resolve) => requestAnimationFrame(resolve));
+      console.log("STEP 3 - Animation frame complete");
 
       // 3. Wait 300ms for gesture/momentum to settle
       await new Promise((resolve) => setTimeout(resolve, 300));
+      console.log("STEP 4 - Delay complete");
+
+      // Diagnostic logs as requested by forensic audit
+      console.log('viewShotRef.current:', viewShotRef.current);
+      console.log('typeof viewShotRef.current:', typeof viewShotRef.current);
 
       if (!viewShotRef.current) {
         throw new Error('Workspace canvas capture interface not ready');
       }
 
-      // 4. Capture native view tag securely
-      const capturedUri = await captureRef(viewShotRef.current, {
-        format: 'jpg',
-        quality: 1.0,
-      });
+      console.log("STEP 5 - Starting capture");
+      // 4. Capture native view tag securely using the ViewShot native module component
+      const capturedUri = await viewShotRef.current.capture!();
+      console.log("STEP 6 - Capture success:", capturedUri);
       
       // 5. Restore Guide Layer
       guideOpacity.value = 1; 
@@ -363,8 +370,11 @@ export default function WallpaperScreen() {
 
       setIsDownloading(true);
 
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== 'granted') {
+      console.log("STEP 7 - Requesting media permissions");
+      const permission = await MediaLibrary.requestPermissionsAsync();
+      console.log("STEP 8 - Permission result:", permission);
+
+      if (permission.status !== 'granted') {
         setIsDownloading(false);
         Alert.alert('Permission Denied', 'Please allow gallery access to save your customized wallpaper.');
         return;
@@ -376,15 +386,26 @@ export default function WallpaperScreen() {
         fromUri = 'file://' + fromUri;
       }
 
+      console.log("STEP 9 - Creating asset");
       // Save to gallery under DevaWalls Album directly using the snapshot URI
       const asset = await MediaLibrary.createAssetAsync(fromUri);
-      await MediaLibrary.createAlbumAsync('DevaWalls', asset, false);
+      console.log("STEP 10 - Asset created:", asset);
+
+      console.log("STEP 11 - Creating album");
+      const album = await MediaLibrary.createAlbumAsync('DevaWalls', asset, false);
+      console.log("STEP 12 - Album created:", album);
 
       setDownloadedLocalUri(fromUri);
       setIsDownloading(false);
+      
+      console.log("STEP 13 - Showing success modal");
       setShowDownloadSuccessModal(true);
       setCustomizeMode(false);
     } catch (error: any) {
+      console.error("CUSTOMIZE SAVE FAILED");
+      console.error(error);
+      console.error(JSON.stringify(error, null, 2));
+
       console.error('Save customized failed:', error);
       Alert.alert('Error', `Could not save your customized wallpaper. Error: ${error?.message || JSON.stringify(error)}`);
       guideOpacity.value = 1;
@@ -413,8 +434,11 @@ export default function WallpaperScreen() {
 
           {/* Top section - Canvas Workspace */}
           <ScrollView style={{ flex: 0.8 }} contentContainerStyle={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
-            {/* STABLE WRAPPER: Standard View provides a standard ViewGroup native node to ViewShot, avoiding ClassCastException */}
-            <View collapsable={false} ref={viewShotRef}>
+            {/* STABLE WRAPPER: ViewShot provides direct native module binding for Expo SDK 54 Fabric compatibility */}
+            <ViewShot 
+              ref={viewShotRef} 
+              options={{ format: 'jpg', quality: 1.0 }}
+            >
               <View style={{ width: WALLPAPER_WIDTH, height: WALLPAPER_HEIGHT, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
                 <RNImage
                   source={{ uri: cachedWallpaperLocalUri || wallpaperUrl }}
@@ -471,7 +495,7 @@ export default function WallpaperScreen() {
                 </Animated.View>
               </GestureDetector>
               </View>
-            </View>
+            </ViewShot>
           </ScrollView>
 
           {/* Bottom Customization Controls */}
