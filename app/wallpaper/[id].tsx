@@ -356,18 +356,18 @@ export default function WallpaperScreen() {
 
       console.log("STEP 5 - Starting capture");
       // 4. Capture native view tag securely using the ViewShot native module component
-      let capturedUri: string | unknown;
+      let capturedUri: string;
       try {
         console.log("CAPTURE BEGIN");
         capturedUri = await Promise.race([
-          viewShotRef.current.capture!(),
+          viewShotRef.current!.capture!(),
           new Promise((_, reject) =>
             setTimeout(
               () => reject(new Error("Capture timeout after 10s")),
               10000
             )
           )
-        ]);
+        ]) as string;
         console.log("CAPTURE SUCCESS", capturedUri);
       } catch (captureError: any) {
         console.error("CAPTURE FAILED");
