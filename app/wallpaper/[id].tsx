@@ -113,7 +113,7 @@ export default function WallpaperScreen() {
     x: number;
     y: number;
     s: number;
-  } | null>(null);
+  }>({ x: 0, y: 0, s: 1 });
 
   const insets = useSafeAreaInsets();
 
@@ -445,9 +445,6 @@ export default function WallpaperScreen() {
         result: 'tmpfile',
       });
 
-      // Step 4 — Clean up capture state
-      setCaptureTransform(null);
-
       if (!capturedUri) throw new Error('captureRef returned empty URI');
 
       // Step 5 — Save to gallery
@@ -471,7 +468,6 @@ export default function WallpaperScreen() {
       setCustomizeMode(false);
     } catch (error: any) {
       console.error('Save customized failed:', error);
-      setCaptureTransform(null);
       setIsDownloading(false);
       Alert.alert(
         'Error',
@@ -611,17 +607,15 @@ export default function WallpaperScreen() {
             {/* ── HIDDEN STATIC CAPTURE VIEW ──────────────────────────────
                 This view is rendered off-screen (opacity 0, no pointer
                 events). It is a plain React Native View with no Reanimated —
-                captureRef works on it 100% reliably.
-                It only becomes "real" (gets real dimensions + content) when
-                captureTransform is set right before capture. ─────────────── */}
-            {captureTransform !== null && (
+                captureRef works on it 100% reliably. ─────────────── */}
               <View
                 ref={captureViewRef}
                 style={{
                   position: 'absolute',
-                  // Place it off-screen so it doesn't flash to the user
+                  // Place it off-screen and invisible so it doesn't flash
                   top: -9999,
                   left: -9999,
+                  opacity: 0,
                   width: CANVAS_PREVIEW_WIDTH,
                   height: CANVAS_PREVIEW_HEIGHT,
                   backgroundColor: '#000',
@@ -667,7 +661,6 @@ export default function WallpaperScreen() {
                   />
                 </View>
               </View>
-            )}
           </ScrollView>
 
           {/* Bottom Controls */}
