@@ -19,7 +19,7 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
-import { captureRef } from 'react-native-view-shot';
+import ViewShot from 'react-native-view-shot';
 import { useUserStore } from '@/stores/userStore';
 import { useCategoryWallpapers } from '@/hooks/useWallpapers';
 import { CATEGORIES } from '@/constants/categories';
@@ -93,7 +93,7 @@ export default function WallpaperScreen() {
   const insets = useSafeAreaInsets();
 
   // Ref on the PLAIN hidden view — never inside a ScrollView
-  const captureViewRef = useRef<View>(null);
+  const captureViewRef = useRef<ViewShot>(null);
 
   const panGesture = Gesture.Pan()
     .onUpdate(e => {
@@ -297,23 +297,9 @@ export default function WallpaperScreen() {
         requestAnimationFrame(() => setTimeout(resolve, 300))
       );
 
-      // captureViewRef is ALWAYS ready here because the view is mounted
-      // outside ScrollView as a SafeAreaView sibling — never clipped
-      console.log("CAPTURE_REF_EXISTS", !!captureViewRef.current);
-      console.log("CAPTURE_REF_TYPE", typeof captureViewRef.current);
+      console.log("CAPTURE_METHOD", typeof captureViewRef.current?.capture);
 
-      const nodeHandle = findNodeHandle(captureViewRef.current);
-      console.log("NODE_HANDLE", nodeHandle);
-
-      if (nodeHandle === null) {
-        throw new Error("Could not resolve node handle for capture");
-      }
-
-      const capturedUri = await captureRef(nodeHandle, {
-        format: 'jpg',
-        quality: 1.0,
-        result: 'tmpfile',
-      });
+      const capturedUri = await captureViewRef.current!.capture!();
 
       if (!capturedUri) throw new Error('captureRef returned empty result');
 
@@ -365,21 +351,29 @@ export default function WallpaperScreen() {
             opacity: 0 = invisible to user.
             No Reanimated anywhere in this tree. ──────────────────────────── */}
         <View
-          ref={captureViewRef}
-          collapsable={false}
           pointerEvents="none"
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
-            width: CANVAS_PREVIEW_WIDTH,
-            height: CANVAS_PREVIEW_HEIGHT,
-            backgroundColor: '#000',
-            overflow: 'hidden',
             opacity: 0,
             zIndex: -1,
           }}
         >
+          <ViewShot
+            ref={captureViewRef}
+            options={{
+              format: 'jpg',
+              quality: 1,
+              result: 'tmpfile'
+            }}
+            style={{
+              width: CANVAS_PREVIEW_WIDTH,
+              height: CANVAS_PREVIEW_HEIGHT,
+              backgroundColor: '#000',
+              overflow: 'hidden',
+            }}
+          >
           <RNImage
             source={{ uri: ensureFileScheme(cachedWallpaperLocalUri) }}
             style={{ position: 'absolute', width: '100%', height: '100%' }}
@@ -410,6 +404,7 @@ export default function WallpaperScreen() {
               resizeMode="cover"
             />
           </View>
+          </ViewShot>
         </View>
 
         {/* ─── MAIN CONTENT ──────────────────────────────────────────────── */}
