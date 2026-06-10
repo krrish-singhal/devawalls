@@ -305,6 +305,10 @@ export default function WallpaperScreen() {
       const nodeHandle = findNodeHandle(captureViewRef.current);
       console.log("NODE_HANDLE", nodeHandle);
 
+      if (nodeHandle === null) {
+        throw new Error("Could not resolve node handle for capture");
+      }
+
       const capturedUri = await captureRef(nodeHandle, {
         format: 'jpg',
         quality: 1.0,
