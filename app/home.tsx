@@ -140,7 +140,7 @@ export default function HomeScreen() {
 
       {/* ── Category Circles ── */}
       <View className="px-4 mb-4">
-        <Text className="text-white font-bold text-base mb-3">सभी देवी-देवताओं के वॉलपेपर</Text>
+        <Text className="text-white font-bold text-base mb-3">All Gods and Goddesses Wallpapers</Text>
         <FlatList
           data={CATEGORIES}
           keyExtractor={(item) => item.id}

@@ -3,15 +3,18 @@ import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withDelay, Easing } from 'react-native-reanimated';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
+import { DIVINE_QUOTES } from '@/constants/quotes';
 
 export default function SplashScreen() {
+  const [quote, setQuote] = useState('');
   const dot1Opacity = useSharedValue(0.3);
   const dot2Opacity = useSharedValue(0.3);
   const dot3Opacity = useSharedValue(0.3);
 
   useEffect(() => {
+    setQuote(DIVINE_QUOTES[Math.floor(Math.random() * DIVINE_QUOTES.length)]);
     dot1Opacity.value = withDelay(
       0,
       withRepeat(withTiming(1, { duration: 600, easing: Easing.inOut(Easing.ease) }), -1, true)
@@ -48,8 +51,13 @@ export default function SplashScreen() {
         {/* App name */}
         <Text className="text-4xl font-bold text-primary text-center mb-2">Deva Walls</Text>
 
-        {/* Hindi subtitle */}
-        <Text className="text-white text-base text-center mb-12">देव की दीवारें</Text>
+        {/* English subtitle */}
+        <Text className="text-white text-base text-center mb-8">From the heart to your mobile home</Text>
+
+        {/* Random Divine Quote */}
+        <View className="px-8 mb-12">
+          <Text className="text-textMuted text-sm text-center italic leading-6">"{quote}"</Text>
+        </View>
 
         {/* Animated dots */}
         <View className="flex-row gap-2">
